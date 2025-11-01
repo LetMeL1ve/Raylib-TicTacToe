@@ -19,13 +19,19 @@ int main() {
     const int field_size = field_texture.height * global_scale;  // Calculating field size in pixels.
 
     // Creating field class.
-    Field field(field_texture, 
+    const std::array<Texture2D, 3> textures = {field_texture, x_texture, o_texture};
+    Field field(textures, 
                 Vector2 {(screen_width - field_size) / 2, (screen_width - field_size) / 2}, 
                 global_scale);
 
 
-    while (!WindowShouldClose())
+    bool window_should_close = false;
+    while (!window_should_close)
     {
+        // Logic
+        window_should_close = WindowShouldClose();
+
+        // Drawing
         BeginDrawing();
         {
             ClearBackground(RAYWHITE);
