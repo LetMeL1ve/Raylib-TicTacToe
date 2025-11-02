@@ -1,7 +1,7 @@
 #include "field.h"
 #include <iostream>
 
-void Field::draw() {
+void Field::draw(std::array<std::array<Vector2, 3>, 3>& symbols_positions) {
     // Getting texture size
     const int size = this->textures.at(0).width;
 
@@ -17,7 +17,7 @@ void Field::draw() {
     for (int y = 0; y != field_size; ++y) {
         for (int x = 0; x != field_size; ++x) {
             if (!(field.at(y).at(x) == ' '))
-                draw_symbol(symbols_positions.at(x).at(y), field.at(y).at(x));
+                draw_symbol(symbols_positions.at(y).at(x), field.at(y).at(x));
         }
     }
 }
@@ -33,19 +33,19 @@ void Field::draw_symbol(Vector2 screen_position, char symbol) {
 }
 
 // Sets symbol at position at "symbol_position" to "symbol" returns true if it is OK else returns flase.
-bool Field::add_to_field(Vector2 symbol_position, char symbol) {
-    if (field.at(symbol_position.y).at(symbol_position.x) == ' ') {
-        field.at(symbol_position.y).at(symbol_position.x) = symbol;
+bool Field::add_to_field(std::pair<int, int> symbol_position, char symbol) {
+    if (field.at(symbol_position.second).at(symbol_position.first) == ' ') {
+        field.at(symbol_position.second).at(symbol_position.first) = symbol;
         return true;
     } else 
         return false;
 }
 
-void Field::get_free_cells(std::vector<Vector2>* free_cells) {
+void Field::get_free_cells(std::vector<std::pair<int, int>>* free_cells) {
     for (int y = 0; y != field_size; ++y) {
         for (int x = 0; x != field_size; ++x) {
             if (field.at(y).at(x) == ' ')
-                free_cells->push_back(Vector2 {static_cast<float>(x), static_cast<float>(y)});
+                free_cells->push_back({static_cast<float>(x), static_cast<float>(y)});
         }
     }
 }
@@ -75,7 +75,7 @@ FieldState Field::check_field() {
     return field[0][2] == 'X' ? FieldState::XWON : FieldState::OWON;
 
     // Draw check
-    std::vector<Vector2> free_cells;
+    std::vector<std::pair<int, int>> free_cells;
     get_free_cells(&free_cells);
     if (free_cells.size() == 0) 
         return FieldState::DRAW;
@@ -89,21 +89,4 @@ Field::Field(const std::array<Texture2D, 3>& ts, Vector2 p, float s) : position(
         textures.at(i) = ts.at(i);
     }
     int symbol_size = textures.at(1).width * scale + 4 * scale;
-    symbols_positions = {{
-        {{
-            Vector2 {position.x, position.y}, 
-            Vector2 {position.x, position.y + symbol_size},
-            Vector2 {position.x, position.y + symbol_size * 2},
-        }},
-        {{
-            Vector2 {position.x + symbol_size, position.y},
-            Vector2 {position.x + symbol_size, position.y + symbol_size},
-            Vector2 {position.x + symbol_size, position.y + symbol_size * 2},
-        }},
-        {{
-            Vector2 {position.x + symbol_size * 2, position.y},
-            Vector2 {position.x + symbol_size * 2, position.y + symbol_size},
-            Vector2 {position.x + symbol_size * 2, position.y + symbol_size * 2},
-        }}
-    }};
 }

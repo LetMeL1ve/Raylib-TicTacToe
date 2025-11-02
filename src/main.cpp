@@ -1,6 +1,10 @@
 #include <raylib.h>
 #include "constants.h"
+#include "game_logic.h"
 #include "field.h"
+#include <iostream>
+
+using namespace constants;
 
 int main() {
     // Window size constants.
@@ -11,18 +15,38 @@ int main() {
     SetTargetFPS(60);
 
     // Loading textures.
-    Texture2D field_texture = LoadTexture(constants::field_texture_path.data());
-    Texture2D o_texture = LoadTexture(constants::o_texture_path.data());
-    Texture2D x_texture = LoadTexture(constants::x_texture_path.data());
+    Texture2D field_texture = LoadTexture(field_texture_path.data());
+    Texture2D o_texture = LoadTexture(o_texture_path.data());
+    Texture2D x_texture = LoadTexture(x_texture_path.data());
     
-    float global_scale = 4; // Global scale that is used for every texture and calculating in the game.
-    const int field_size = field_texture.height * global_scale;  // Calculating field size in pixels.
-
     // Creating field class.
     const std::array<Texture2D, 3> textures = {field_texture, x_texture, o_texture};
     Field field(textures, 
                 Vector2 {(screen_width - field_size) / 2, (screen_width - field_size) / 2}, 
-                global_scale);
+               global_scale);
+    // Creating game logic class.
+    GameLogic game;
+
+    const Vector2 field_position = field.get_position();
+
+    // This matrix represents symbols positions
+    std::array<std::array<Vector2, 3>, 3> symbols_positions = {{
+        {{
+            Vector2 {field_position.x, field_position.y}, 
+            Vector2 {field_position.x + (symbol_size + gap), field_position.y},
+            Vector2 {field_position.x + (symbol_size + gap) * 2, field_position.y}, 
+        }},
+        {{
+            Vector2 {field_position.x, field_position.y + (symbol_size + gap)},
+            Vector2 {field_position.x + (symbol_size + gap), field_position.y + (symbol_size + gap)},
+            Vector2 {field_position.x + (symbol_size + gap) * 2, field_position.y + (symbol_size + gap) },
+        }},
+        {{
+            Vector2 {field_position.x, field_position.y + (symbol_size + gap) * 2},
+            Vector2 {field_position.x + (symbol_size + gap), field_position.y + (symbol_size + gap) * 2},
+            Vector2 {field_position.x + (symbol_size + gap) * 2, field_position.y + (symbol_size + gap) * 2},
+        }}
+    }};
 
 
     bool window_should_close = false;
@@ -30,12 +54,18 @@ int main() {
     {
         // Logic
         window_should_close = WindowShouldClose();
-
+        std::pair<int, int> player_move = game.get_player_move((symbol_size + gap), symbols_positions);
+        if (player_move.first != -1 && player_move.second != -1) {
+            field.add_to_field(player_move, game.plays_o() ? 'O' : 'X');
+            game.swap_players();
+        }
+        FieldState field_state = field.check_field();
+        if (field_state != FieldState::NONE) window_should_close = true;
         // Drawing
         BeginDrawing();
         {
             ClearBackground(RAYWHITE);
-            field.draw();
+            field.draw(symbols_positions);
         }
         EndDrawing();
     }

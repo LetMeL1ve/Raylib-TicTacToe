@@ -19,24 +19,24 @@ private:
     Vector2 position;
     float scale;
     field_t field = {{
-        {{'X', 'O', ' '}},
-        {{'X', 'O', ' '}},
-        {{'X', 'O', ' '}},
+        {{' ', ' ', ' '}},
+        {{' ', ' ', ' '}},
+        {{' ', ' ', ' '}},
     }};
 
     const inline static int field_size = 3;
-
-    std::array<std::array<Vector2, 3>, 3> symbols_positions;
 
     void draw_symbol(Vector2, char);
 public:
     Field(const std::array<Texture2D, 3>& ts, Vector2 p, float s);
 
-    void draw();
+    void draw(std::array<std::array<Vector2, 3>, 3>&);
 
-    bool add_to_field(Vector2, char);
+    bool add_to_field(std::pair<int, int>, char);
 
     FieldState check_field();
 
-    void get_free_cells(std::vector<Vector2>*);
+    void get_free_cells(std::vector<std::pair<int, int>>*);
+
+    Vector2 get_position() { return position; }
 };
